@@ -89,6 +89,8 @@ Most balance values are in the unit scenes (`unit/**/*.tscn`). Wave pacing is in
 
 **Team:** Tiago Jarruge Saraiva, Matheus Di Giacomo, Luiz Henrique Freitas.
 
+**Music and sound effects:** original, made by the team.
+
 **Third-party assets** (CC BY 4.0):
 - [Low poly mushrooms set](https://sketchfab.com/3d-models/low-poly-mushrooms-set-53755c7630754ac49b679e44a79c5a40) by [ClydeXYZ](https://sketchfab.com/ClydeXYZ)
 - [Low poly trees](https://sketchfab.com/3d-models/low-poly-trees-51cae4a194344e8bbfbd0a4cff205f76) by [Aditya Graphical](https://sketchfab.com/Adityakm)

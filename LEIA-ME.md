@@ -90,6 +90,8 @@ O workflow `.github/workflows/deploy.yml` exporta os dois builds no GitHub Actio
 
 **Equipe:** Tiago Jarruge Saraiva, Matheus Di Giacomo e Luiz Henrique Freitas.
 
+**Música e efeitos sonoros:** autorais, feitos pela equipe.
+
 **Modelos de terceiros** (CC BY 4.0):
 - [Low poly mushrooms set](https://sketchfab.com/3d-models/low-poly-mushrooms-set-53755c7630754ac49b679e44a79c5a40), de [ClydeXYZ](https://sketchfab.com/ClydeXYZ)
 - [Low poly trees](https://sketchfab.com/3d-models/low-poly-trees-51cae4a194344e8bbfbd0a4cff205f76), de [Aditya Graphical](https://sketchfab.com/Adityakm)
