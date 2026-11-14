@@ -12,20 +12,8 @@ func _ready():
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	match state:
-		UnitState.MOVING:
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_001")
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_002")
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_003")
+		UnitState.MOVING, UnitState.CHASING:
 			get_node("canhaoMinion/AnimationPlayer").play("canhao_004")
-		UnitState.CHASING:
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_001")
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_002")
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_003")
-			get_node("canhaoMinion/AnimationPlayer").play("canhao_004")
-		UnitState.ATTACKING:
-			get_node("AudioTiro").play()
-		UnitState.DEAD:
-			queue_free()
 
 func behavior_ai(delta):
 
@@ -41,7 +29,7 @@ func behavior_ai(delta):
 	if enemies.size() > 0:
 		target = get_enemy_closest_to_player(enemies)
 
-		var dist_to_player = global_position.distance_to(player.global_position)
+		var dist_to_player = global_position.distance_to(player.global_position) if player != null else 0.0
 
 		if dist_to_player > player_min_distance:
 			move_to(player.global_position)
@@ -58,7 +46,7 @@ func get_valid_enemies() -> Array[BaseUnit]:
 	var result: Array[BaseUnit] = []
 
 	for unit in detected_units:
-		if unit != null and unit.state != UnitState.DEAD and unit.faction != faction:
+		if is_unit_alive(unit) and unit.faction != faction:
 			result.append(unit)
 
 	return result

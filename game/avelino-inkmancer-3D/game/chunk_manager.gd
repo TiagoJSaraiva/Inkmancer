@@ -22,7 +22,6 @@ func randomize_seed():
 	rng = RandomNumberGenerator.new()
 	world_seed = int(Time.get_unix_time_from_system())
 	rng.seed = world_seed
-	print("World Seed:", world_seed)
 
 
 func setup_chunk_pool():
@@ -107,7 +106,7 @@ func spawn_carimbos():
 		var spawner = spawners[i]
 		var instance = carimbo_scene.instantiate()
 		spawner.add_child(instance)
-		ArrowManager.carimbos.append(instance)
+
 		instance.transform = Transform3D.IDENTITY
 		
 		

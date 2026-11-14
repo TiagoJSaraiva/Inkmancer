@@ -22,7 +22,6 @@ func _physics_process(delta: float) -> void:
 			queue_free()
 		UnitState.ATTACKING:
 			get_node("minion/AnimationPlayer").play("stamp_attack")
-			get_node("AudioAtaque").play()
 		UnitState.IDLE:
 			get_node("minion/AnimationPlayer").play("idle")
 	
@@ -38,17 +37,16 @@ func behavior_ai(delta):
 		target = get_enemy_closest_to_player(enemies)
 		if state != UnitState.ATTACKING:
 			chase(target)
-		# print("[Ally] Engaging enemy:", target.name)
 		return
 
 	# PRIORIDADE 2 — Player fora da área
 	if player != null and not is_player_in_detection():
 		move_to(player.global_position)
-		# print("[Ally] Moving to player")
 		return
 
-	# PRIORIDADE 3 — Wander
-	state = UnitState.IDLE
+	# PRIORIDADE 3 — Wander (não interrompe uma caminhada em andamento)
+	if state == UnitState.CHASING or state == UnitState.ATTACKING:
+		state = UnitState.IDLE
 	handle_wander(delta)
 	
 func is_player_in_detection() -> bool:

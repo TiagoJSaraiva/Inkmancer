@@ -16,14 +16,10 @@ const COOLDOWN_FONT := preload("res://utilitarios/EagleLake-Regular.ttf")
 @export var type_icon_scale: Vector2 = Vector2(0.72, 0.72)
 
 var canvas_layer: CanvasLayer
-var instance_unit_type
-var instance_unit_rarity
-var selected_slot
-var slot_selected: int
-var hud_selecter0
-var hud_selecter1
-var hud_selecter2
-var hud_selecter3
+var slot_selected: int = 0
+var _selectors: Array[Control] = []
+var _slots: Array[Control] = []
+var _habs: Array[Control] = []
 var slot_unit_type_icons: Array = [null, null, null, null]
 var slot_unit_rarity_icons: Array = [null, null, null, null]
 var slot_cooldown_labels: Array[Label] = []
@@ -32,15 +28,11 @@ var slot_cooldowns: Array[float] = [0.0, 0.0, 0.0, 0.0]
 
 func _ready():
 	canvas_layer = get_node(canvas_layer_path)
-	hud_selecter0 = get_node("../HUD/HUDRoot/SlotSelecter0")
-	hud_selecter1 = get_node("../HUD/HUDRoot/SlotSelecter1")
-	hud_selecter2 = get_node("../HUD/HUDRoot/SlotSelecter2")
-	hud_selecter3 = get_node("../HUD/HUDRoot/SlotSelecter3")
-	hud_selecter0.show()
-	hud_selecter1.hide()
-	hud_selecter2.hide()
-	hud_selecter3.hide()
-	slot_selected = 0
+	for i in range(4):
+		_selectors.append(get_node_or_null("../HUD/HUDRoot/SlotSelecter%d" % i) as Control)
+		_slots.append(get_node_or_null("../HUD/HUDRoot/Slot%d" % i) as Control)
+		_habs.append(get_node_or_null("../HUD/HUDRoot/CentroSection/Habilidades/Hab%d" % i) as Control)
+	select_slot(0)
 	_sync_slot_layout_with_habilidades()
 	_setup_cooldown_labels()
 
@@ -60,7 +52,7 @@ func _process(delta: float) -> void:
 
 func _setup_cooldown_labels() -> void:
 	for i in range(4):
-		var slot := get_node_or_null("../HUD/HUDRoot/Slot%d" % i) as Control
+		var slot := _slots[i]
 		if slot == null:
 			slot_cooldown_labels.append(null)
 			continue
@@ -92,7 +84,7 @@ func _position_cooldown_label(slot_index: int) -> void:
 	if label == null:
 		return
 
-	var slot := get_node_or_null("../HUD/HUDRoot/Slot%d" % slot_index) as Control
+	var slot := _slots[slot_index]
 	if slot == null:
 		return
 
@@ -125,24 +117,24 @@ func _get_visual_size(icon: Control) -> Vector2:
 
 func _sync_slot_layout_with_habilidades() -> void:
 	for i in range(4):
-		var hab := get_node_or_null("../HUD/HUDRoot/CentroSection/Habilidades/Hab%d" % i) as Control
+		var hab := _habs[i]
 		if hab == null:
 			continue
 
 		var center := hab.get_global_rect().position + hab.get_global_rect().size / 2.0
 
-		var slot := get_node_or_null("../HUD/HUDRoot/Slot%d" % i) as Control
+		var slot := _slots[i]
 		if slot != null:
 			slot.global_position = center
 
-		var selector := get_node_or_null("../HUD/HUDRoot/SlotSelecter%d" % i) as Control
+		var selector := _selectors[i]
 		if selector != null:
 			selector.global_position = center
 
 
 func _apply_slot_selector_scale() -> void:
 	for i in range(4):
-		var selector := get_node_or_null("../HUD/HUDRoot/SlotSelecter%d" % i) as Control
+		var selector := _selectors[i]
 		if selector == null:
 			continue
 		selector.scale = slot_selector_scale
@@ -161,7 +153,7 @@ func _apply_symbol_scales() -> void:
 
 func _reposition_slot_visuals() -> void:
 	for i in range(4):
-		var slot := get_node_or_null("../HUD/HUDRoot/Slot%d" % i) as Control
+		var slot := _slots[i]
 		if slot == null:
 			continue
 
@@ -235,12 +227,20 @@ func _update_slot_cooldown_visual(slot_index: int) -> void:
 		label.text = ""
 
 func spawn_interface(index: int, unit_type: Carimbo.TipoUnidade, rarity: Carimbo.Raridade):
+	if index < 0 or index > 3:
+		push_error("Índice de slot inválido: %d" % index)
+		return
 
 	if !interface_scene_melee or !interface_scene_ranged or !interface_scene_siege:
 		push_error("interface_scene não atribuída!")
 		return
 
-	# Instancia tipo de unidade
+	var slot := _slots[index]
+	if slot == null:
+		push_error("Slot não encontrado. Verifique o caminho.")
+		return
+
+	var instance_unit_type: Control
 	match unit_type:
 		Carimbo.TipoUnidade.GUERREIRO:
 			instance_unit_type = interface_scene_melee.instantiate()
@@ -249,7 +249,7 @@ func spawn_interface(index: int, unit_type: Carimbo.TipoUnidade, rarity: Carimbo
 		Carimbo.TipoUnidade.CANHAO:
 			instance_unit_type = interface_scene_siege.instantiate()
 
-	# Instancia raridade
+	var instance_unit_rarity: Control
 	match rarity:
 		Carimbo.Raridade.COMUM:
 			instance_unit_rarity = interface_scene_common.instantiate()
@@ -258,16 +258,8 @@ func spawn_interface(index: int, unit_type: Carimbo.TipoUnidade, rarity: Carimbo
 		Carimbo.Raridade.RARO:
 			instance_unit_rarity = interface_scene_rare.instantiate()
 
-	# Valida índice
-	if index < 0 or index > 3:
-		push_error("Índice inválido")
-		return
-
-	# Ajuste o caminho se necessário
-	var slot := get_node_or_null("../HUD/HUDRoot/Slot%d" % index) as Control
-
-	if slot == null:
-		push_error("Slot não encontrado. Verifique o caminho.")
+	if instance_unit_type == null or instance_unit_rarity == null:
+		push_error("Falha ao instanciar ícones do slot %d" % index)
 		return
 
 	# Adiciona ao Canvas (raridade atrás, tipo por cima)
@@ -279,53 +271,29 @@ func spawn_interface(index: int, unit_type: Carimbo.TipoUnidade, rarity: Carimbo
 	canvas_layer.add_child(instance_unit_rarity)
 	canvas_layer.add_child(instance_unit_type)
 
-	await get_tree().process_frame
-
 	instance_unit_rarity.scale = rarity_icon_scale
 	instance_unit_type.scale = type_icon_scale
-
-	var center = _get_slot_center(slot)
-
-	var rarity_size = _get_visual_size(instance_unit_rarity) * instance_unit_rarity.scale
-	var type_size = _get_visual_size(instance_unit_type) * instance_unit_type.scale
-
-	# Centraliza corretamente mesmo com distorção
-	instance_unit_rarity.position = center - rarity_size / 2
-	instance_unit_type.position = center - type_size / 2
-
 	slot_unit_type_icons[index] = instance_unit_type
 	slot_unit_rarity_icons[index] = instance_unit_rarity
 	_apply_symbol_scales()
+	_reposition_slot_visuals()
 	_update_slot_cooldown_visual(index)
-	
+
+
+func select_slot(idx: int) -> void:
+	if idx < 0 or idx > 3:
+		return
+	slot_selected = idx
+	for i in range(_selectors.size()):
+		if _selectors[i] != null:
+			_selectors[i].visible = i == idx
+	var hud = get_node_or_null("../HUD")
+	if hud != null and hud.has_method("destacar_habilidade"):
+		hud.destacar_habilidade(idx)
+
+
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("slot_0"):
-		slot_selected = 0
-		hud_selecter0.show()
-		hud_selecter1.hide()
-		hud_selecter2.hide()
-		hud_selecter3.hide()
-	
-	if event.is_action_pressed("slot_1"):
-		slot_selected = 1
-		hud_selecter0.hide()
-		hud_selecter1.show()
-		hud_selecter2.hide()
-		hud_selecter3.hide()	
-			
-	if event.is_action_pressed("slot_2"):
-		slot_selected = 2
-		hud_selecter0.hide()
-		hud_selecter1.hide()
-		hud_selecter2.show()
-		hud_selecter3.hide()
-		
-	if event.is_action_pressed("slot_3"):
-		slot_selected = 3
-		hud_selecter0.hide()
-		hud_selecter1.hide()
-		hud_selecter2.hide()
-		hud_selecter3.show()
-		
-	
-	
+	for i in range(4):
+		if event.is_action_pressed("slot_%d" % i):
+			select_slot(i)
+			return

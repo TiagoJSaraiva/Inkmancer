@@ -16,6 +16,8 @@ enum UnitState { IDLE, MOVING, CHASING, ATTACKING, DEAD }
 @export var damage: float = 10.0
 @export var attack_speed: float = 1.0
 @export var attack_range: float = 2.0
+## Raio aproximado do corpo; o alcance de quem ataca esta unidade conta até a borda
+@export var body_radius: float = 0.5
 @export var show_health_bar: bool = true
 @export var health_bar_scene: PackedScene
 @export var health_bar_offset: Vector3 = Vector3(0, 3.2, 0)
@@ -30,11 +32,26 @@ var attack_cooldown: float = 0.0
 
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
+# Tinta que o jogador recebe ao matar uma unidade inimiga
+const ENEMY_INK_REWARD: float = 3.0
+const ATTACK_AUDIO_NODES: Array[String] = ["AudioAtaque", "AudioFlecha", "AudioTiro"]
+
+# Tempo de vida (aliados invocados "secam"). 0 = infinito.
+var lifetime: float = 0.0
+var _lifetime_left: float = 0.0
+var _attack_audio: Node = null
+
 
 func _ready() -> void:
 	current_health = max_health
 	add_to_group("base_unit")
 	_configure_collision_layers()
+	_lifetime_left = lifetime
+
+	for audio_name in ATTACK_AUDIO_NODES:
+		_attack_audio = get_node_or_null(audio_name)
+		if _attack_audio != null:
+			break
 
 	if show_health_bar and health_bar_scene != null:
 		call_deferred("_spawn_health_bar")
@@ -73,6 +90,14 @@ func _physics_process(delta: float) -> void:
 	if state == UnitState.DEAD:
 		return
 	
+	if lifetime > 0.0:
+		_lifetime_left -= delta
+		if _lifetime_left <= 0.0:
+			die()
+			return
+		# Pisca nos últimos segundos para avisar que vai secar
+		visible = _lifetime_left > 3.0 or fmod(_lifetime_left, 0.4) > 0.2
+
 	update_cooldowns(delta)
 	behavior_ai(delta)
 	
@@ -114,8 +139,19 @@ func process_movement() -> void:
 	rotate_towards(move_target_position)
 	
 	
+## Multiplica vida e dano (usado no spawn para escalar inimigos com o tempo).
+## Deve ser chamado antes de adicionar a unidade na árvore.
+func apply_stat_multiplier(mult: float) -> void:
+	max_health *= mult
+	damage *= mult
+
+
+static func is_unit_alive(unit) -> bool:
+	return unit != null and is_instance_valid(unit) and unit.state != UnitState.DEAD
+
+
 func chase(enemy: BaseUnit) -> void:
-	if enemy == null or enemy.state == UnitState.DEAD:
+	if not is_unit_alive(enemy):
 		return
 	
 	target = enemy
@@ -123,14 +159,14 @@ func chase(enemy: BaseUnit) -> void:
 	
 	
 func process_chasing() -> void:
-	if target == null or target.state == UnitState.DEAD:
+	if not is_unit_alive(target):
 		state = UnitState.IDLE
 		return
 	
 	var direction: Vector3 = target.global_position - global_position
 	direction.y = 0.0
-	var distance: float = direction.length()
-	
+	var distance: float = direction.length() - target.body_radius
+
 	if distance <= attack_range:
 		velocity = Vector3.ZERO
 		state = UnitState.ATTACKING
@@ -142,12 +178,12 @@ func process_chasing() -> void:
 	
 	
 func process_attack() -> void:
-	if target == null or target.state == UnitState.DEAD:
+	if not is_unit_alive(target):
 		state = UnitState.IDLE
 		return
 	
-	var distance: float = global_position.distance_to(target.global_position)
-	
+	var distance: float = global_position.distance_to(target.global_position) - target.body_radius
+
 	if distance > attack_range:
 		state = UnitState.CHASING
 		return
@@ -156,7 +192,13 @@ func process_attack() -> void:
 	
 	if attack_cooldown <= 0.0:
 		attack(target)
-		attack_cooldown = 1.0 / attack_speed
+		attack_cooldown = 1.0 / max(attack_speed, 0.01)
+		_play_attack_sound()
+
+
+func _play_attack_sound() -> void:
+	if _attack_audio != null and _attack_audio.has_method("play"):
+		_attack_audio.play()
 	
 	
 func take_damage(amount: float) -> void:
@@ -170,14 +212,22 @@ func take_damage(amount: float) -> void:
 
 	if current_health <= 0.0:
 		die()
-		
+		return
+
 	_on_damaged()
 		
 	
 	
 func die() -> void:
+	if state == UnitState.DEAD:
+		return
 	state = UnitState.DEAD
 	velocity = Vector3.ZERO
+
+	if faction == Faction.ENEMY:
+		var player := get_tree().get_first_node_in_group("player")
+		if player != null and player.has_method("gain_mana"):
+			player.gain_mana(ENEMY_INK_REWARD)
 	
 	if health_bar_instance != null:
 		health_bar_instance.queue_free()

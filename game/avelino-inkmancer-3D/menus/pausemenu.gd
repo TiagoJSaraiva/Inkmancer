@@ -9,7 +9,6 @@ const MAIN_MENU_SCENE = "res://menus/mainmenu.tscn"
 @onready var pergaminho = $Pergaminho
 
 var confirm_dialog: ConfirmationDialog
-var modo_ingame := false
 
 
 func _ready():
@@ -56,7 +55,7 @@ func _on_audio():
 		visible = true
 		get_tree().paused = true
 	)
-	get_tree().root.add_child(audio_menu)
+	get_parent().add_child(audio_menu)
 
 func _on_controles():
 	visible = false
@@ -66,7 +65,7 @@ func _on_controles():
 		visible = true
 		get_tree().paused = true
 	)
-	get_tree().root.add_child(controls_menu)
+	get_parent().add_child(controls_menu)
 
 
 func _on_sair():
@@ -79,8 +78,9 @@ func _confirmar_saida():
 
 
 func _unhandled_input(event):
-	if event.is_action_pressed("ui_cancel"):
-		if visible:
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+		if visible and not confirm_dialog.visible:
+			get_viewport().set_input_as_handled()
 			_on_voltar()
 
 func _centralizar_menu():

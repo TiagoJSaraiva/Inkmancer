@@ -19,7 +19,6 @@ func _physics_process(delta: float) -> void:
 			queue_free()
 		UnitState.ATTACKING:
 			get_node("guerreiro/AnimationPlayer").play("sword_attack")
-			get_node("AudioAtaque").play()
 		UnitState.IDLE:
 			get_node("guerreiro/AnimationPlayer").play("idle")
 
@@ -32,16 +31,23 @@ func behavior_ai(delta):
 
 	# PRIORIDADE 1 — Ally detectado (sempre sobrepõe player)
 	if enemies.size() > 0:
-		'''if target != enemies[0]:
-			print("[Enemy] Switching aggro to:", enemies[0].name)'''
-		target = enemies[0]
+		target = _get_closest(enemies)
 		if state != UnitState.ATTACKING:
 			chase(target)
 		return
 
 	# PRIORIDADE 2 — Player
-	if player != null and player.state != UnitState.DEAD:
-		'''if target != player:
-			print("[Enemy] Chasing player")'''
+	if is_unit_alive(player):
 		target = player
 		chase(player)
+
+
+func _get_closest(units: Array[BaseUnit]) -> BaseUnit:
+	var closest: BaseUnit = null
+	var min_distance := INF
+	for unit in units:
+		var dist := global_position.distance_squared_to(unit.global_position)
+		if dist < min_distance:
+			min_distance = dist
+			closest = unit
+	return closest

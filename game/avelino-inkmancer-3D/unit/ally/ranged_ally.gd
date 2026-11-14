@@ -21,7 +21,6 @@ func _physics_process(delta: float) -> void:
 			queue_free()
 		UnitState.ATTACKING:
 			get_node("minion/AnimationPlayer").play("atirar_flecha")
-			get_node("AudioFlecha").play()
 		UnitState.IDLE:
 			get_node("minion/AnimationPlayer").play("idle")
 
@@ -41,7 +40,7 @@ func behavior_ai(delta: float):
 	if enemies.size() > 0:
 		target = get_enemy_closest_to_player(enemies)
 
-		var dist_to_player = global_position.distance_to(player.global_position)
+		var dist_to_player = global_position.distance_to(player.global_position) if player != null else 0.0
 
 		# Se estiver longe demais do player, volta até 5m
 		if dist_to_player > player_min_distance:

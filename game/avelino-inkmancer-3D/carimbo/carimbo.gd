@@ -66,6 +66,9 @@ func _ready():
 	collision_layer = LAYER_WORLD
 	collision_mask = LAYER_ALLY_UNITS
 	body_entered.connect(_on_body_entered)
+	add_to_group("carimbo")
+	if not ArrowManager.carimbos.has(self):
+		ArrowManager.carimbos.append(self)
 	var _raridade = randi_range(1, 3)
 	match _raridade:
 		1: 
@@ -78,13 +81,20 @@ func _ready():
 			self.raridade = Raridade.RARO
 			pontos_totais = PONTOS_POR_RARIDADE.raro
 	
+func _exit_tree() -> void:
+	ArrowManager.carimbos.erase(self)
+
+
+var _coletado := false
+
 func _on_body_entered(body: Node3D) -> void:
-	if body.is_in_group("player"):
+	if body.is_in_group("player") and not _coletado and not get_tree().paused:
 		_ao_coletar(body)
-		
-func _ao_coletar(player: Node3D) -> void:
+
+func _ao_coletar(_player: Node3D) -> void:
+	_coletado = true
 	var display = DISPLAY_SCENE.instantiate()
-	get_tree().root.add_child(display)
+	UiUtil.show_menu(get_tree(), display)
 	display.carregar_carimbo(self)
 	
 

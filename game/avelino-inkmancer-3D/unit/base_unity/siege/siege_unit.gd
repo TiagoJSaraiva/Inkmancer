@@ -4,6 +4,7 @@ class_name SiegeUnit
 @export var projectile_scene: PackedScene
 @export var projectile_arc_time: float = 0.6
 @export var projectile_offset_distance: float = 1.0
+@export var projectile_splash_radius: float = 3.0
 
 @onready var attack_origin: Node3D = $AttackOrigin
 @onready var detection_area: Area3D = $DetectionArea
@@ -17,7 +18,7 @@ func _ready():
 
 func attack(enemy: BaseUnit):
 
-	if enemy == null or projectile_scene == null:
+	if projectile_scene == null or not is_unit_alive(enemy):
 		return
 
 	rotate_towards(enemy.global_position)
@@ -34,6 +35,7 @@ func attack(enemy: BaseUnit):
 	var target_point = enemy.global_position + dir * projectile_offset_distance
 
 	projectile.arc_time = projectile_arc_time
+	projectile.splash_radius = projectile_splash_radius
 	projectile.initialize(start_pos, target_point, damage, faction)
 
 func _on_detection_entered(body):
@@ -46,7 +48,7 @@ func _on_detection_exited(body):
 
 func clean_detected():
 	detected_units = detected_units.filter(
-		func(u): return u != null and u.state != UnitState.DEAD
+		func(u): return is_unit_alive(u)
 	)
 
 func get_farthest_target() -> BaseUnit:
@@ -66,3 +68,17 @@ func get_farthest_target() -> BaseUnit:
 			farthest = unit
 
 	return farthest
+
+
+func get_closest_target() -> BaseUnit:
+	clean_detected()
+
+	var closest: BaseUnit = null
+	var min_dist := INF
+	for unit in detected_units:
+		var d := global_position.distance_squared_to(unit.global_position)
+		if d < min_dist:
+			min_dist = d
+			closest = unit
+
+	return closest

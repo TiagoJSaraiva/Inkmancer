@@ -5,6 +5,7 @@ extends BaseUnit
 @export var projectile_scene: PackedScene
 @export var projectile_arc_time: float = 0.8
 @export var projectile_offset_distance: float = 5.0
+@export var projectile_splash_radius: float = 1.5
 @export var attack_origin_path: NodePath = NodePath("AttackOrigin")
 
 var player: Node3D
@@ -22,6 +23,7 @@ func _physics_process(delta: float) -> void:
 
 func _ready() -> void:
 	super._ready()
+	add_to_group("boss")
 	player = get_tree().get_first_node_in_group("player")
 	attack_origin = get_node_or_null(attack_origin_path)
 	if attack_origin == null:
@@ -78,6 +80,7 @@ func attack(enemy: BaseUnit) -> void:
 	var target_point = enemy.global_position + dir * projectile_offset_distance
 
 	projectile.arc_time = projectile_arc_time
+	projectile.splash_radius = projectile_splash_radius
 	projectile.initialize(start_pos, target_point, damage, faction)
 
 
@@ -109,6 +112,9 @@ func get_closest_enemy(enemies: Array[BaseUnit]) -> BaseUnit:
 	return closest
 		
 func die():
-	var WIN_SCENE = win_scene.instantiate()
-	get_tree().root.add_child(WIN_SCENE)
+	if state == UnitState.DEAD:
+		return
+	var player_dead: bool = player is BaseUnit and player.state == UnitState.DEAD
+	if win_scene != null and not player_dead:
+		UiUtil.show_menu(get_tree(), win_scene.instantiate())
 	super.die()

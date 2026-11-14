@@ -10,7 +10,8 @@ size = Vector3(3.7223816, 4.3062134, 1.3638916)
 
 [node name="CharacterBody3D" type="CharacterBody3D" unique_id=1843227362]
 script = ExtResource("1_4flbx")
-move_speed = 20.0
+move_speed = 14.0
+max_health = 150.0
 show_health_bar = false
 
 [node name="mago" parent="." unique_id=313601369 instance=ExtResource("2_rkbax")]

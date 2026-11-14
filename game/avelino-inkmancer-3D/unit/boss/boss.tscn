@@ -16,14 +16,17 @@ radius = 40.77832
 script = ExtResource("1_h68hj")
 win_scene = ExtResource("2_460v6")
 projectile_scene = ExtResource("4_2xq0g")
-projectile_arc_time = 1.0
+projectile_arc_time = 0.5
 projectile_offset_distance = 1.0
 attack_origin_path = NodePath("attack_origin")
 faction = 1
-max_health = 1000.0
-attack_speed = 5.0
-attack_range = 30.0
+max_health = 2000.0
+attack_speed = 1.0
+attack_range = 15.0
 health_bar_scene = ExtResource("3_i16oc")
+move_speed = 6.0
+damage = 20.0
+body_radius = 4.0
 
 [node name="anjo" parent="." unique_id=1924285470 instance=ExtResource("1_w7ekg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2399812, 0)

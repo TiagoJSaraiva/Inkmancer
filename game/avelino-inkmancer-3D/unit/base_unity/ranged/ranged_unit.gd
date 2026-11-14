@@ -27,13 +27,13 @@ func get_valid_enemies() -> Array[BaseUnit]:
 	var result: Array[BaseUnit] = []
 
 	for unit in detected_units:
-		if unit != null and unit.state != UnitState.DEAD and unit.faction != faction:
+		if is_unit_alive(unit) and unit.faction != faction:
 			result.append(unit)
 
 	return result
 	
 func attack(enemy: BaseUnit) -> void:
-	if projectile_scene == null:
+	if projectile_scene == null or not is_unit_alive(enemy):
 		return
 
 	var projectile = projectile_scene.instantiate()

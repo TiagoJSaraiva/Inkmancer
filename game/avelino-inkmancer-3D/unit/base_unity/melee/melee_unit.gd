@@ -19,7 +19,7 @@ func _on_body_exited(body):
 		detected_units.erase(body)
 
 func attack(enemy: BaseUnit):
-	if enemy == null:
+	if not is_unit_alive(enemy):
 		return
 	
 	rotate_towards(enemy.global_position)
@@ -29,7 +29,7 @@ func get_valid_enemies() -> Array[BaseUnit]:
 	var result: Array[BaseUnit] = []
 	
 	for unit in detected_units:
-		if unit != null and unit.state != UnitState.DEAD and unit.faction != faction:
+		if is_unit_alive(unit) and unit.faction != faction:
 			result.append(unit)
 	
 	return result

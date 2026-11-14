@@ -3,14 +3,17 @@ extends Control
 var modo_ingame := false
 
 const ACTIONS = {
+	"walk_front": "Mover Cima",
+	"walk_back":  "Mover Baixo",
 	"walk_left":  "Mover Esquerda",
 	"walk_right": "Mover Direita",
-	"walk_up":    "Mover Cima",
-	"walk_down":  "Mover Trás",
-	"attack":     "Atacar",
-	"summon":     "Invocar",
-	"ui_cancel":  "Configurações"
-	# adiciona mais se precisar
+	"attack":     "Carimbada",
+	"summon":     "Invocar (2 cliques)",
+	"slot_0":     "Carimbo 1",
+	"slot_1":     "Carimbo 2",
+	"slot_2":     "Carimbo 3",
+	"slot_3":     "Carimbo 4",
+	"pause":      "Pausar",
 }
 
 @onready var grid       = $Pergaminho/GridControles
@@ -51,6 +54,8 @@ func _estilizar_label(label: Label):
 
 
 func _get_key_name(action: String) -> String:
+	if not InputMap.has_action(action):
+		return "Não definido"
 	var events = InputMap.action_get_events(action)
 	if events.is_empty():
 		return "Não definido"

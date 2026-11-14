@@ -1,6 +1,7 @@
 extends RigidBody3D
 class_name Projectile
 
+const LAYER_WORLD: int = 1
 const LAYER_ALLY_UNITS: int = 1 << 1
 const LAYER_ENEMY_UNITS: int = 1 << 2
 const LAYER_PROJECTILE_ALLY: int = 1 << 3
@@ -8,6 +9,10 @@ const LAYER_PROJECTILE_ENEMY: int = 1 << 4
 
 @export var arc_time: float = 0.4
 @export var max_lifetime: float = 4
+## Raio do dano em área ao impactar (0 = só acerta o alvo atingido)
+@export var splash_radius: float = 0.0
+## Fração do dano aplicada na borda da área
+@export var splash_edge_multiplier: float = 0.5
 
 var damage: float
 var target_position: Vector3
@@ -32,10 +37,10 @@ func initialize(start_position: Vector3, target_pos: Vector3, dmg: float, factio
 
 	if shooter_faction == BaseUnit.Faction.ALLY:
 		collision_layer = LAYER_PROJECTILE_ALLY
-		collision_mask = LAYER_ENEMY_UNITS
+		collision_mask = LAYER_ENEMY_UNITS | LAYER_WORLD
 	else:
 		collision_layer = LAYER_PROJECTILE_ENEMY
-		collision_mask = LAYER_ALLY_UNITS
+		collision_mask = LAYER_ALLY_UNITS | LAYER_WORLD
 
 	launch()
 
@@ -70,19 +75,36 @@ func _on_body_entered(body):
 	if has_collided:
 		return
 
+	# Mesmo time → ignora completamente
+	if body is BaseUnit and body.faction == shooter_faction:
+		return
+
 	has_collided = true
 
+	if splash_radius > 0.0:
+		_explode(global_position)
+		queue_free()
+		return
+
 	if body is BaseUnit:
-		if body.faction != shooter_faction:
-			body.take_damage(damage)
-			on_hit_unit(body)
-			return
-		else:
-			# Mesmo time → ignora completamente
-			has_collided = false
-			return
+		body.take_damage(damage)
+		on_hit_unit(body)
+		return
 
 	on_hit_environment(body)
+
+
+func _explode(center: Vector3) -> void:
+	for unit in get_tree().get_nodes_in_group("base_unit"):
+		if not BaseUnit.is_unit_alive(unit) or unit.faction == shooter_faction:
+			continue
+		var offset: Vector3 = unit.global_position - center
+		offset.y = 0.0
+		var dist := offset.length()
+		if dist > splash_radius:
+			continue
+		var mult: float = lerp(1.0, splash_edge_multiplier, dist / splash_radius)
+		unit.take_damage(damage * mult)
 	
 func on_hit_unit(unit: BaseUnit) -> void:
 	queue_free()

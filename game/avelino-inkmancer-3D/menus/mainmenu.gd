@@ -26,6 +26,10 @@ const IMAGENS = {
 
 func _ready():
 	botoes = [btn_jogar, btn_controles, btn_audio, btn_sair]
+	# No navegador não existe "sair do jogo"
+	if OS.has_feature("web"):
+		botoes.erase(btn_sair)
+		btn_sair.hide()
 
 	for btn in botoes:
 		hover_ativo[btn] = false

@@ -2,7 +2,7 @@ extends RangedUnit
 class_name RangedEnemy
 
 @export var retreat_time: float = 3.0
-@export var retreat_speed_multiplier: float = 3
+@export var player_priority_distance: float = 8.0
 
 var player: Node3D
 var retreat_timer: float = 0.0
@@ -24,7 +24,6 @@ func _physics_process(delta: float) -> void:
 			queue_free()
 		UnitState.ATTACKING:
 			get_node("arqueiro/AnimationPlayer").play("atirar_flecha")
-			get_node("AudioFlecha").play()
 		UnitState.IDLE:
 			get_node("arqueiro/AnimationPlayer").play("idle")
 
@@ -38,7 +37,7 @@ func behavior_ai(delta: float):
 
 	# PRIORIDADE 3 — Retirada
 			
-	if retreat_timer > 0.0 && current_health < max_health/2 && retreated < retreat_time:
+	if player != null and retreat_timer > 0.0 and current_health < max_health / 2.0 and retreated < retreat_time:
 		retreat_timer -= delta
 		retreated += delta
 
@@ -51,6 +50,9 @@ func behavior_ai(delta: float):
 
 	if enemies.size() > 0:
 		target = get_closest_enemy(enemies)
+		# Jogador perto vira prioridade
+		if is_unit_alive(player) and enemies.has(player) 				and global_position.distance_to(player.global_position) <= player_priority_distance:
+			target = player
 
 		if state != UnitState.ATTACKING:
 			chase(target)

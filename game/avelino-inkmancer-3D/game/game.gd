@@ -13,7 +13,7 @@ var pause_menu_aberto := false
 @export var cleanup_min_distance_from_player: float = 128.0
 @export var cleanup_min_displacement: float = 0.35
 @export var cleanup_stuck_time_required: float = 3.0
-@export var countdown_start_minutes: int = 10
+@export var countdown_start_minutes: int = 5
 @export var boss_spawn_min_distance: float = 64.0
 @export var boss_spawn_max_distance: float = 128.0
 
@@ -21,6 +21,7 @@ var _cleanup_timer: Timer
 var _enemy_motion_tracker: Dictionary = {}
 var _remaining_time: float = 0.0
 var _boss_spawned: bool = false
+var _timer_turned_red: bool = false
 
 
 func _ready() -> void:
@@ -35,8 +36,10 @@ func _process(delta: float) -> void:
 	if _remaining_time > 0.0:
 		_remaining_time = max(_remaining_time - delta, 0.0)
 
-	if timer_label != null and _remaining_time <= 0.0:
-		timer_label.add_theme_color_override("font_color", Color(1, 0, 0, 1))
+	if _remaining_time <= 0.0:
+		if timer_label != null and not _timer_turned_red:
+			timer_label.add_theme_color_override("font_color", Color(1, 0, 0, 1))
+			_timer_turned_red = true
 		if not _boss_spawned:
 			_spawn_boss_from_random_spawner_in_range()
 
@@ -59,10 +62,11 @@ func _spawn_boss_from_random_spawner_in_range() -> void:
 		return
 
 	var _spawners := get_tree().get_nodes_in_group("spawner")
-	if _spawners.is_empty():
-		return
 
 	var valid_spawners: Array[Node3D] = []
+	var fallback_spawner: Node3D = null
+	var fallback_error := INF
+	var ideal_distance := (boss_spawn_min_distance + boss_spawn_max_distance) / 2.0
 	for spawner in _spawners:
 		if not (spawner is Node3D):
 			continue
@@ -70,17 +74,27 @@ func _spawn_boss_from_random_spawner_in_range() -> void:
 		var dist := (spawner as Node3D).global_position.distance_to(_player.global_position)
 		if dist >= boss_spawn_min_distance and dist <= boss_spawn_max_distance:
 			valid_spawners.append(spawner)
+		# Spawner mais próximo da distância ideal, caso nenhum esteja na faixa
+		if dist >= 32.0 and abs(dist - ideal_distance) < fallback_error:
+			fallback_error = abs(dist - ideal_distance)
+			fallback_spawner = spawner
 
-	if valid_spawners.is_empty():
-		return
+	var spawn_position: Vector3
+	if not valid_spawners.is_empty():
+		spawn_position = valid_spawners.pick_random().global_position
+	elif fallback_spawner != null:
+		spawn_position = fallback_spawner.global_position
+	else:
+		# Sem spawners: nasce a uma distância fixa numa direção aleatória
+		var angle := randf() * TAU
+		spawn_position = _player.global_position + Vector3(cos(angle), 0, sin(angle)) * ideal_distance
 
-	var chosen_spawner = valid_spawners.pick_random()
 	var boss := BOSS_SCENE.instantiate() as Node3D
 	if boss == null:
 		return
 
 	get_tree().current_scene.add_child(boss)
-	boss.global_position = chosen_spawner.global_position
+	boss.global_position = spawn_position
 	_boss_spawned = true
 
 
@@ -93,7 +107,10 @@ func _setup_enemy_cleanup() -> void:
 
 
 func _unhandled_input(event):
-	if event.is_action_pressed("pause") and not pause_menu_aberto:
+	if pause_menu_aberto or get_tree().paused:
+		return
+	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
 		_abrir_pause()
 
 
@@ -102,7 +119,7 @@ func _abrir_pause():
 	var menu = PAUSE_MENU.instantiate()
 	# Quando o menu for removido, marca como fechado
 	menu.tree_exited.connect(func(): pause_menu_aberto = false)
-	add_child(menu)
+	UiUtil.show_menu(get_tree(), menu)
 
 
 func _cleanup_far_stuck_enemies() -> void:
@@ -126,6 +143,10 @@ func _cleanup_far_stuck_enemies() -> void:
 		if unit.state == BaseUnit.UnitState.DEAD:
 			continue
 
+		# O boss nunca é removido (senão o jogo fica sem vitória)
+		if unit.is_in_group("boss"):
+			continue
+
 		var enemy := unit as BaseUnit
 		var enemy_id := enemy.get_instance_id()
 		active_enemy_ids[enemy_id] = true
@@ -143,7 +164,9 @@ func _cleanup_far_stuck_enemies() -> void:
 		var last_position: Vector3 = tracker["last_position"]
 		var displacement := enemy.global_position.distance_to(last_position)
 
-		if displacement <= cleanup_min_displacement:
+		# Só conta como "preso" quem está tentando andar (atacando parado é normal)
+		var trying_to_move: bool = enemy.state == BaseUnit.UnitState.MOVING or enemy.state == BaseUnit.UnitState.CHASING
+		if displacement <= cleanup_min_displacement and trying_to_move:
 			tracker["stuck_time"] += _cleanup_timer.wait_time
 		else:
 			tracker["stuck_time"] = 0.0
@@ -164,6 +187,7 @@ func _despawn_enemy(enemy: BaseUnit) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
 
+	enemy.state = BaseUnit.UnitState.DEAD
 	if enemy.health_bar_instance != null and is_instance_valid(enemy.health_bar_instance):
 		enemy.health_bar_instance.queue_free()
 
