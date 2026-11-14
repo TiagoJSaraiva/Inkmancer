@@ -1,0 +1,104 @@
+name: Build & Deploy
+
+# - push no main: exporta Web + Windows e publica a versão Web no GitHub Pages
+# - tag v* (ex.: v1.0.0): também cria um Release com o .zip para Windows
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+  PROJECT_DIR: game/avelino-inkmancer-3D
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Cache Godot e export templates
+        id: cache-godot
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-web-win
+
+      - name: Instalar Godot e templates (Web + Windows)
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          TPL_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p ~/godot "$TPL_DIR"
+          cd ~/godot
+          wget -q "$BASE/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          wget -q "$BASE/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q -j "Godot_v${GODOT_VERSION}-stable_export_templates.tpz" \
+            'templates/version.txt' \
+            'templates/web_nothreads_*' \
+            'templates/windows_*_x86_64.exe' \
+            -d "$TPL_DIR"
+          rm -f ./*.zip ./*.tpz
+
+      - name: Importar assets
+        run: ~/godot/godot --headless --path "$PROJECT_DIR" --import
+
+      - name: Exportar Web
+        run: |
+          mkdir -p build/web
+          ~/godot/godot --headless --path "$PROJECT_DIR" --export-release "Web" ../../build/web/index.html
+          test -f build/web/index.pck
+
+      - name: Exportar Windows
+        run: |
+          mkdir -p build/windows
+          ~/godot/godot --headless --path "$PROJECT_DIR" --export-release "Windows Desktop" ../../build/windows/Inkmancer.exe
+          test -f build/windows/Inkmancer.exe
+
+      - name: Empacotar .zip para Windows
+        run: |
+          cp LEIA-ME.md README.md build/windows/
+          cd build/windows && zip -q -r ../Inkmancer-windows.zip .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Inkmancer-windows
+          path: build/Inkmancer-windows.zip
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/web
+
+      - name: Publicar Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: build/Inkmancer-windows.zip
+          generate_release_notes: true
+
+  deploy-pages:
+    needs: export
+    # O ambiente github-pages só aceita deploy a partir do branch padrão
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
