@@ -24,7 +24,7 @@ The browser version needs WebGL 2 and runs best in Chrome, Edge or Firefox on de
 
 ## How to play
 
-1. **Find stamps.** The arrow on screen points to the nearest one. Walk over it to pick it up.
+1. **Find stamps.** The red arrow on screen points to the nearest one. Walk over it to pick it up.
 2. **Engrave it.** Choose the unit type and spend the stamp's attribute points on Attack, Health and Speed. Rarity follows the order you pick stamps up: the 1st and 2nd are Common (3 points), the 3rd is Uncommon (6) and the 4th is Rare (9). The engraving is permanent for the run.
    - **Warrior:** melee.
    - **Archer:** single-target ranged.
@@ -39,7 +39,7 @@ The browser version needs WebGL 2 and runs best in Chrome, Edge or Firefox on de
 
    Ink regenerates over time, and every enemy you kill gives some back.
 4. **Mind the ink.** Summoned units dry out after 40, 50 or 60 seconds depending on rarity. There is no limit on how many you can have.
-5. **Survive 5:00.** Enemies get tougher every minute. When the timer runs out the boss appears and the waves stop. Defeat the boss to win.
+5. **Survive 5:00.** Enemies get tougher every minute. When the timer runs out the boss appears and the waves stop. A yellow arrow points to the boss while it is off screen. Defeat the boss to win.
 
 Your health regenerates after a few seconds without taking damage.
 
@@ -75,7 +75,7 @@ game/avelino-inkmancer-3D/
 ├── player/      player controller, health and ink
 ├── unit/        base unit + ally/enemy/boss units and projectiles
 ├── spawner/     enemy waves and difficulty curve
-├── carimbo/     stamp pickups and the guide arrow
+├── carimbo/     stamp pickups and the guide arrows
 ├── menus/       HUD, pause, victory/defeat, engraving screen
 ├── SummonSystem.gd   summoning (cost, cooldown, ally cap, lifetime)
 └── assets/      models, sounds, music

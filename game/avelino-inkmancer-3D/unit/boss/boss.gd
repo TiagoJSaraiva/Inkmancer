@@ -15,8 +15,16 @@ var retreat_timer: float = 0.0
 var retreated: float = 0.0
 var attack_origin: Node3D
 
+## Abaixo desta altura o boss caiu do mapa e é trazido de volta (nunca some)
+const FALL_LIMIT_Y: float = -20.0
+## Distância (m) do jogador em que o boss reaparece depois de cair
+const FALL_RESPAWN_DISTANCE: float = 40.0
+
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
+
+	if global_position.y < FALL_LIMIT_Y:
+		_recover_from_fall()
 
 	if state == UnitState.ATTACKING:
 		get_node("anjo/AnimationPlayer").play("ataque")
@@ -30,6 +38,17 @@ func _ready() -> void:
 	attack_origin = get_node_or_null(attack_origin_path)
 	if attack_origin == null:
 		attack_origin = self
+
+
+func _recover_from_fall() -> void:
+	var origin: Vector3 = player.global_position if player != null and is_instance_valid(player) else Vector3.ZERO
+	var angle := randf() * TAU
+	global_position = Vector3(
+		origin.x + cos(angle) * FALL_RESPAWN_DISTANCE,
+		1.0,
+		origin.z + sin(angle) * FALL_RESPAWN_DISTANCE
+	)
+	velocity = Vector3.ZERO
 
 
 func _on_damaged() -> void:

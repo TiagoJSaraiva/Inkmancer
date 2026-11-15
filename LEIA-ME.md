@@ -24,7 +24,7 @@ A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firef
 
 ## Regras
 
-1. **Encontre carimbos.** A seta na tela aponta para o mais próximo. Passe por cima para pegar.
+1. **Encontre carimbos.** A seta vermelha na tela aponta para o mais próximo. Passe por cima para pegar.
 2. **Grave o carimbo.** Escolha o tipo de unidade e distribua os pontos entre Ataque, Vida e Velocidade. A gravura não muda mais durante a partida.
    - **Guerreiro:** corpo a corpo.
    - **Arqueiro:** à distância, um alvo por vez.
@@ -49,7 +49,7 @@ A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firef
 4. **Administre o exército.**
    - As unidades secam depois de 40, 50 ou 60 segundos, de acordo com a raridade. Elas piscam quando estão perto de sumir.
    - Não há limite de unidades ao mesmo tempo.
-5. **Sobreviva até 5:00.** Os inimigos ficam mais fortes a cada minuto. Quando o tempo acaba, o chefe aparece e as ondas param. Derrote o chefe para vencer.
+5. **Sobreviva até 5:00.** Os inimigos ficam mais fortes a cada minuto. Quando o tempo acaba, o chefe aparece e as ondas param. Uma seta amarela aponta para o chefe enquanto ele estiver fora da tela. Derrote o chefe para vencer.
 
 Sua vida regenera depois de alguns segundos sem levar dano.
 
