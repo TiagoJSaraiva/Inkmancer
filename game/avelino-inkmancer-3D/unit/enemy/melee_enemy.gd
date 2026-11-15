@@ -5,7 +5,12 @@ var player: Node3D
 
 func _ready():
 	super._ready()
+	attack_animation = &"sword_attack"
 	player = get_tree().get_first_node_in_group("player")
+
+func _get_anim_player() -> AnimationPlayer:
+	return get_node("guerreiro/AnimationPlayer") as AnimationPlayer
+
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
@@ -18,13 +23,19 @@ func _physics_process(delta: float) -> void:
 			get_node("guerreiro/AnimationPlayer").play("morte")
 			queue_free()
 		UnitState.ATTACKING:
-			get_node("guerreiro/AnimationPlayer").play("sword_attack")
+			# A animação de ataque é tocada por _start_attack(); entre golpes, idle
+			if not is_attack_committed():
+				get_node("guerreiro/AnimationPlayer").play("idle")
 		UnitState.IDLE:
 			get_node("guerreiro/AnimationPlayer").play("idle")
 
 func behavior_ai(delta):
 
 	if state == UnitState.DEAD:
+		return
+
+	# Golpe em andamento: não retarget nem muda de estado até terminar
+	if is_attack_committed():
 		return
 
 	var enemies = get_valid_enemies()
