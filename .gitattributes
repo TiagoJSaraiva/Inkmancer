@@ -1,0 +1,2 @@
+# Normaliza fins de linha para LF (o Godot grava os arquivos assim)
+* text=auto eol=lf
