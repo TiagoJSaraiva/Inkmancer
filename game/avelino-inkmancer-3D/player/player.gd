@@ -3,11 +3,11 @@ class_name Player
 
 @export var max_mana: float = 100.0
 ## Tinta regenerada por segundo
-@export var mana_regen: float = 5.0
+@export var mana_regen: float = 2.5
 @export var list_of_carimbos: Array[Dictionary]
 
 @export_group("Regeneração de vida")
-@export var health_regen_per_second: float = 2.0
+@export var health_regen_per_second: float = 1.0
 ## Segundos sem levar dano antes de começar a regenerar
 @export var health_regen_delay: float = 4.0
 
