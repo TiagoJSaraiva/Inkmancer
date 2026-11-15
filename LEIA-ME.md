@@ -18,7 +18,6 @@ A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firef
 | Ação | Comando |
 |---|---|
 | Andar | `W` `A` `S` `D` |
-| Carimbada (ataque curto na direção do cursor) | Clique esquerdo |
 | Invocar: o 1º clique mostra o alcance, o 2º invoca no cursor | Clique direito (2×) |
 | Escolher carimbo | `1` `2` `3` `4` |
 | Pausar | `P` ou `Esc` |
@@ -31,13 +30,13 @@ A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firef
    - **Arqueiro:** à distância, um alvo por vez.
    - **Canhão:** lento, com dano em área.
 
-   A raridade define quantos pontos o carimbo tem:
+   A raridade segue a ordem em que você pega os carimbos e define quantos pontos cada um tem:
 
-   | Raridade | Pontos |
-   |---|---|
-   | Comum | 3 |
-   | Incomum | 6 |
-   | Raro | 9 |
+   | Carimbo | Raridade | Pontos |
+   |---|---|---|
+   | 1º e 2º | Comum | 3 |
+   | 3º | Incomum | 6 |
+   | 4º | Raro | 9 |
 
 3. **Invoque.** Cada invocação gasta tinta (a poção azul). A tinta regenera com o tempo, e cada inimigo derrotado devolve um pouco.
 
@@ -49,7 +48,7 @@ A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firef
 
 4. **Administre o exército.**
    - As unidades secam depois de 40, 50 ou 60 segundos, de acordo com a raridade. Elas piscam quando estão perto de sumir.
-   - Você pode ter no máximo 8 unidades ao mesmo tempo.
+   - Não há limite de unidades ao mesmo tempo.
 5. **Sobreviva até 5:00.** Os inimigos ficam mais fortes a cada minuto. Quando o tempo acaba, o chefe aparece e as ondas param. Derrote o chefe para vencer.
 
 Sua vida regenera depois de alguns segundos sem levar dano.
@@ -82,8 +81,8 @@ O workflow `.github/workflows/deploy.yml` exporta os dois builds no GitHub Actio
 |---|---|
 | Atributos de cada unidade | `unit/**/*.tscn` |
 | Ritmo das ondas e escala dos inimigos | `spawner/spawner_manager.gd` |
-| Custo, recarga, vida útil e limite de aliados | `SummonSystem.gd` |
-| Tinta e ataque do jogador | `player/player.gd` |
+| Custo, recarga e vida útil dos aliados | `SummonSystem.gd` |
+| Vida e tinta do jogador | `player/player.gd` |
 | Tempo até o chefe | `game/game.gd` (`countdown_start_minutes`) |
 
 ## Créditos
