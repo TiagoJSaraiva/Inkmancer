@@ -3,7 +3,7 @@ class_name Player
 
 @export var max_mana: float = 100.0
 ## Tinta regenerada por segundo
-@export var mana_regen: float = 2.5
+@export var mana_regen: float = 3.75
 @export var list_of_carimbos: Array[Dictionary]
 
 @export_group("Regeneração de vida")

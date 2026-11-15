@@ -10,8 +10,8 @@ class_name SpawnManager
 @export var enemy_limit: int = 12
 ## Quanto o teto de inimigos cresce a cada minuto
 @export var enemy_limit_growth_per_minute: int = 4
-## Vida e dano dos inimigos crescem esta fração por minuto (0.15 = +15%/min)
-@export var stat_scaling_per_minute: float = 0.15
+## Vida e dano dos inimigos crescem esta fração por minuto (0.08 = +8%/min)
+@export var stat_scaling_per_minute: float = 0.08
 	
 	
 ## Inimigos criados por spawner a cada vez que o intervalo dele vence
