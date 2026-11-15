@@ -110,8 +110,109 @@ func _physics_process(delta: float) -> void:
 			process_attack()
 		UnitState.IDLE:
 			velocity = Vector3.ZERO
-	
+
 	move_and_slide()
+	_update_prop_stuck(delta)
+
+
+## Tempo (s) preso contra um prop até passar a atravessá-lo
+const STUCK_TIME_TO_GHOST: float = 2.0
+## Quanto (m) a unidade precisa se afastar para deixar de contar como presa
+const STUCK_ANCHOR_RADIUS: float = 1.0
+## Normais com y acima disto são chão (não contam como prop bloqueando)
+const PROP_NORMAL_MAX_Y: float = 0.7
+
+var _stuck_anchor: Vector3
+var _stuck_time: float = 0.0
+## Props que a unidade está atravessando (com exceção de colisão ativa)
+var _ghosted_props: Array[PhysicsBody3D] = []
+var _body_shape: CollisionShape3D = null
+
+
+## Se a unidade fica presa tentando andar contra um prop, desliga a colisão
+## com ele até ela sair do outro lado. Não usa distância fixa: a exceção só
+## é desfeita quando a forma da unidade não sobrepõe mais o prop, então
+## funciona igual para props finos e grossos.
+func _update_prop_stuck(delta: float) -> void:
+	_release_cleared_props()
+
+	var trying_to_move := state == UnitState.MOVING or state == UnitState.CHASING
+	var blocking: Array[PhysicsBody3D] = []
+	if trying_to_move:
+		blocking = _get_blocking_props()
+
+	if blocking.is_empty():
+		_stuck_time = 0.0
+		_stuck_anchor = global_position
+		return
+
+	var moved := global_position - _stuck_anchor
+	moved.y = 0.0
+	if moved.length() > STUCK_ANCHOR_RADIUS:
+		_stuck_time = 0.0
+		_stuck_anchor = global_position
+		return
+
+	_stuck_time += delta
+	if _stuck_time < STUCK_TIME_TO_GHOST:
+		return
+
+	for body in blocking:
+		if not _ghosted_props.has(body):
+			add_collision_exception_with(body)
+			_ghosted_props.append(body)
+	_stuck_time = 0.0
+	_stuck_anchor = global_position
+
+
+func _get_blocking_props() -> Array[PhysicsBody3D]:
+	var result: Array[PhysicsBody3D] = []
+	for i in range(get_slide_collision_count()):
+		var collision := get_slide_collision(i)
+		var body := collision.get_collider() as StaticBody3D
+		if body == null:
+			continue
+		if collision.get_normal().y > PROP_NORMAL_MAX_Y:
+			continue
+		if not result.has(body):
+			result.append(body)
+	return result
+
+
+func _release_cleared_props() -> void:
+	if _ghosted_props.is_empty():
+		return
+
+	var overlapping := _get_overlapping_world_bodies()
+	for body in _ghosted_props.duplicate():
+		if not is_instance_valid(body):
+			_ghosted_props.erase(body)
+			continue
+		if not overlapping.has(body):
+			remove_collision_exception_with(body)
+			_ghosted_props.erase(body)
+
+
+func _get_overlapping_world_bodies() -> Array:
+	if _body_shape == null:
+		for child in get_children():
+			if child is CollisionShape3D and child.shape != null:
+				_body_shape = child
+				break
+	if _body_shape == null:
+		return []
+
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = _body_shape.shape
+	query.transform = _body_shape.global_transform
+	query.collision_mask = LAYER_WORLD
+	query.margin = 0.2
+	query.exclude = [get_rid()]
+
+	var bodies: Array = []
+	for hit in get_world_3d().direct_space_state.intersect_shape(query, 32):
+		bodies.append(hit["collider"])
+	return bodies
 	
 	
 func update_cooldowns(delta: float) -> void:
