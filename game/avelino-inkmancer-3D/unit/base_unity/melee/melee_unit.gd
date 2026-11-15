@@ -85,8 +85,8 @@ func process_attack() -> void:
 		state = UnitState.IDLE
 		return
 
-	var distance: float = global_position.distance_to(target.global_position) - target.body_radius
-	if distance > attack_range:
+	var distance: float = distance_to_target_edge(target)
+	if distance > attack_range + ATTACK_RANGE_TOLERANCE:
 		state = UnitState.CHASING
 		return
 

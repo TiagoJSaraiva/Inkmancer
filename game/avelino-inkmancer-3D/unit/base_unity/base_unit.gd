@@ -150,6 +150,19 @@ static func is_unit_alive(unit) -> bool:
 	return unit != null and is_instance_valid(unit) and unit.state != UnitState.DEAD
 
 
+## Folga (m) além do alcance antes de sair do ataque e voltar a perseguir.
+## Evita alternar entre perseguir e atacar a cada quadro no limite do alcance.
+const ATTACK_RANGE_TOLERANCE: float = 0.75
+
+
+## Distância horizontal até a borda do corpo do alvo (ignora a altura, que
+## varia entre modelos e faria as checagens de alcance discordarem).
+func distance_to_target_edge(unit: BaseUnit) -> float:
+	var offset: Vector3 = unit.global_position - global_position
+	offset.y = 0.0
+	return offset.length() - unit.body_radius
+
+
 func chase(enemy: BaseUnit) -> void:
 	if not is_unit_alive(enemy):
 		return
@@ -165,7 +178,7 @@ func process_chasing() -> void:
 	
 	var direction: Vector3 = target.global_position - global_position
 	direction.y = 0.0
-	var distance: float = direction.length() - target.body_radius
+	var distance: float = distance_to_target_edge(target)
 
 	if distance <= attack_range:
 		velocity = Vector3.ZERO
@@ -182,9 +195,9 @@ func process_attack() -> void:
 		state = UnitState.IDLE
 		return
 	
-	var distance: float = global_position.distance_to(target.global_position) - target.body_radius
+	var distance: float = distance_to_target_edge(target)
 
-	if distance > attack_range:
+	if distance > attack_range + ATTACK_RANGE_TOLERANCE:
 		state = UnitState.CHASING
 		return
 	
