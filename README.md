@@ -8,10 +8,7 @@ Made in Godot 4.7 for a game jam (FelpoJam 2026.1).
 
 ## Play
 
-- **In the browser:** https://tiagojsaraiva.github.io/Inkmancer/
-- **Windows:** download `Inkmancer-windows.zip` from [Releases](https://github.com/TiagoJSaraiva/Inkmancer/releases), unzip it and run `Inkmancer.exe`.
-
-The browser version needs WebGL 2 and runs best in Chrome, Edge or Firefox on desktop. Click the game once so it can capture the keyboard.
+Download `Inkmancer-windows.zip` from [Releases](https://github.com/TiagoJSaraiva/Inkmancer/releases), unzip it and run `Inkmancer.exe`.
 
 ## Controls
 
@@ -50,22 +47,21 @@ Your health regenerates after a few seconds without taking damage.
 
 ## Exporting
 
-Export presets for **Web** and **Windows Desktop** are in `game/avelino-inkmancer-3D/export_presets.cfg`. Builds go to `build/` at the repository root, which git ignores.
+The **Windows Desktop** export preset is in `game/avelino-inkmancer-3D/export_presets.cfg`. Builds go to `build/` at the repository root, which git ignores.
 
 ```sh
 cd game/avelino-inkmancer-3D
-godot --headless --export-release "Web" ../../build/web/index.html
 godot --headless --export-release "Windows Desktop" ../../build/windows/Inkmancer.exe
 ```
 
-The Web preset has thread support disabled, so the build runs on plain static hosting such as GitHub Pages without COOP/COEP headers. You need the Godot 4.7.2 export templates (*Editor → Manage Export Templates*).
+You need the Godot 4.7.2 export templates (*Editor → Manage Export Templates*).
 
-### Continuous deployment
+### Releases
 
-`.github/workflows/deploy.yml` exports both builds on GitHub Actions:
+`.github/workflows/deploy.yml` exports the Windows build on GitHub Actions:
 
-- **Push to `main`:** publishes the Web build to GitHub Pages. Repository settings → Pages → Source must be set to **GitHub Actions**.
-- **Push a tag such as `v1.0.0`:** also creates a GitHub Release with `Inkmancer-windows.zip` attached.
+- **Push a tag such as `v1.0.1`** (`git tag v1.0.1 && git push origin v1.0.1`): creates a GitHub Release with `Inkmancer-windows.zip` attached.
+- **Run workflow** (manual, from the Actions tab): exports the build and keeps the `.zip` as a workflow artifact, without creating a Release.
 
 ## Project layout
 

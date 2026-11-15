@@ -8,10 +8,7 @@ Feito em Godot 4.7 para a FelpoJam 2026.1.
 
 ## Como jogar
 
-- **No navegador:** https://tiagojsaraiva.github.io/Inkmancer/
-- **No Windows:** baixe o `Inkmancer-windows.zip` em [Releases](https://github.com/TiagoJSaraiva/Inkmancer/releases), extraia e abra o `Inkmancer.exe`.
-
-A versão de navegador precisa de WebGL 2 e roda melhor em Chrome, Edge ou Firefox no computador. Clique uma vez na tela do jogo para o teclado funcionar.
+Baixe o `Inkmancer-windows.zip` em [Releases](https://github.com/TiagoJSaraiva/Inkmancer/releases), extraia e abra o `Inkmancer.exe`.
 
 ## Controles
 
@@ -60,20 +57,19 @@ Sua vida regenera depois de alguns segundos sem levar dano.
 2. Abra `game/avelino-inkmancer-3D/project.godot` no editor e aperte **F5**.
 
 ### Exportar
-Os presets **Web** e **Windows Desktop** estão em `game/avelino-inkmancer-3D/export_presets.cfg`. Os builds vão para `build/` na raiz do repositório (ignorado pelo git).
+O preset **Windows Desktop** está em `game/avelino-inkmancer-3D/export_presets.cfg`. Os builds vão para `build/` na raiz do repositório (ignorado pelo git).
 
 ```sh
 cd game/avelino-inkmancer-3D
-godot --headless --export-release "Web" ../../build/web/index.html
 godot --headless --export-release "Windows Desktop" ../../build/windows/Inkmancer.exe
 ```
 
-O preset Web é exportado sem threads. Por isso roda em hospedagem estática como o GitHub Pages, sem precisar dos cabeçalhos COOP/COEP. Os export templates do Godot 4.7.2 precisam estar instalados (*Editor → Gerenciar Modelos de Exportação*).
+Os export templates do Godot 4.7.2 precisam estar instalados (*Editor → Gerenciar Modelos de Exportação*).
 
-### Deploy automático
-O workflow `.github/workflows/deploy.yml` exporta os dois builds no GitHub Actions:
-- **Push no `main`:** publica a versão Web no GitHub Pages. Em *Settings → Pages → Source*, a fonte precisa estar como **GitHub Actions**.
-- **Tag `v*` (ex.: `v1.0.0`):** também cria um Release com o `Inkmancer-windows.zip`.
+### Releases
+O workflow `.github/workflows/deploy.yml` exporta o build de Windows no GitHub Actions:
+- **Tag `v*`** (ex.: `git tag v1.0.1 && git push origin v1.0.1`): cria um Release com o `Inkmancer-windows.zip`.
+- **Run workflow** (manual, na aba Actions): exporta o build e guarda o `.zip` como artifact, sem criar Release.
 
 ### Onde ajustar o balanceamento
 
