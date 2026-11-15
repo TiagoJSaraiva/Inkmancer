@@ -12,8 +12,8 @@ var _last_spawn_time: float = 0.0
 func _ready():
 	add_to_group("spawner")
 
-## Retorna true se spawnou uma unidade.
-func try_spawn(player: Node3D, current_time: float, stat_multiplier: float = 1.0) -> bool:
+## Retorna true se spawnou unidades (até `count`).
+func try_spawn(player: Node3D, current_time: float, stat_multiplier: float = 1.0, count: int = 1) -> bool:
 	if unit_pool.is_empty():
 		return false
 
@@ -26,7 +26,8 @@ func try_spawn(player: Node3D, current_time: float, stat_multiplier: float = 1.0
 	if dist_sq < MIN_DIST_SQ or dist_sq > MAX_DIST_SQ:
 		return false
 
-	_spawn_unit(stat_multiplier)
+	for i in range(count):
+		_spawn_unit(stat_multiplier)
 	_last_spawn_time = current_time
 	return true
 
