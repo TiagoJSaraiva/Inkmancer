@@ -11,8 +11,6 @@ const SIEGE_ALLY_SCENE := preload("res://unit/ally/siege_ally.tscn")
 @export var common_mana_cost: float = 30.0
 @export var uncommon_mana_cost: float = 35.0
 @export var rare_mana_cost: float = 40.0
-## Máximo de aliados invocados vivos ao mesmo tempo
-@export var max_allies: int = 8
 ## Bônus por ponto de atributo do carimbo (linear: 5 pontos = +60%)
 @export var bonus_por_ponto: float = 0.12
 ## Segundos até a unidade "secar", por raridade
@@ -204,10 +202,6 @@ func _invocar():
 	var mana_cost: float = _get_mana_cost_by_rarity(carimbo_rarity)
 	if player.current_mana < mana_cost:
 		_avisar("Tinta insuficiente (%.0f)" % mana_cost)
-		return
-
-	if get_tree().get_nodes_in_group(SUMMON_GROUP).size() >= max_allies:
-		_avisar("Limite de %d aliados" % max_allies)
 		return
 
 	if not carimbo_data.has("unit_type"):
