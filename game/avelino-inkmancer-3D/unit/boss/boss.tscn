@@ -21,12 +21,15 @@ projectile_offset_distance = 1.0
 attack_origin_path = NodePath("attack_origin")
 faction = 1
 max_health = 2000.0
-attack_speed = 1.0
+attack_speed = 0.4
 attack_range = 15.0
 health_bar_scene = ExtResource("3_i16oc")
+health_bar_offset = Vector3(0, 10, 0)
+health_bar_scale = Vector3(8, 8, 8)
 move_speed = 6.0
-damage = 20.0
+damage = 60.0
 body_radius = 4.0
+projectile_splash_radius = 3.5
 
 [node name="anjo" parent="." unique_id=1924285470 instance=ExtResource("1_w7ekg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2399812, 0)

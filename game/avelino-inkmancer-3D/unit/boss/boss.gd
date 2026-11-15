@@ -6,6 +6,8 @@ extends BaseUnit
 @export var projectile_arc_time: float = 0.8
 @export var projectile_offset_distance: float = 5.0
 @export var projectile_splash_radius: float = 1.5
+## Altura (m) acima dos pés do alvo que o projétil mira (centro do corpo)
+@export var aim_height_offset: float = 1.5
 @export var attack_origin_path: NodePath = NodePath("AttackOrigin")
 
 var player: Node3D
@@ -76,8 +78,11 @@ func attack(enemy: BaseUnit) -> void:
 	get_tree().current_scene.add_child(projectile)
 
 	var start_pos = attack_origin.global_position
-	var dir = (enemy.global_position - start_pos).normalized()
-	var target_point = enemy.global_position + dir * projectile_offset_distance
+	var aim_pos: Vector3 = enemy.global_position + Vector3.UP * aim_height_offset
+	var dir = aim_pos - start_pos
+	dir.y = 0.0
+	dir = dir.normalized()
+	var target_point = aim_pos + dir * projectile_offset_distance
 
 	projectile.arc_time = projectile_arc_time
 	projectile.splash_radius = projectile_splash_radius
