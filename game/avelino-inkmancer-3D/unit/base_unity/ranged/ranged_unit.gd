@@ -4,10 +4,10 @@ class_name RangedUnit
 @export var projectile_scene: PackedScene
 @export var projectile_arc_time: float = 0.8
 @export var projectile_offset_distance: float = 5.0
-## Altura (m) acima dos pés do alvo que o projétil mira (centro do corpo, não o chão)
-@export var aim_height_offset: float = 1.5
+## Altura (m) acima dos pés do alvo que o projétil mira (~1.5 = centro do corpo)
+@export var aim_height_offset: float = 0.0
 ## Fração do deslocamento do alvo durante o voo que é antecipada (0 = sem antecipação)
-@export var aim_lead_factor: float = 1.0
+@export var aim_lead_factor: float = 0.0
 
 @onready var attack_origin: Node3D = $AttackOrigin
 @onready var detection_area: Area3D = $DetectionArea
