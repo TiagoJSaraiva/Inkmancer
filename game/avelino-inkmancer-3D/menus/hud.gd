@@ -13,7 +13,6 @@ extends CanvasLayer
 	$HUDRoot/CentroSection/Habilidades/Hab3,
 ]
 
-@onready var btn_ataque    = $HUDRoot/CentroSection/AcoesExtra/BtnAtaque
 @onready var btn_invocacao = $HUDRoot/CentroSection/AcoesExtra/BtnInvocacao
 
 var habilidade_selecionada: int = 0
@@ -44,7 +43,6 @@ func _ready():
 		btn_habilidade[i].pressed.connect(func(): _pedir_slot(idx))
 
 	# Botões de ação
-	btn_ataque.pressed.connect(_on_ataque)
 	btn_invocacao.pressed.connect(_on_invocacao)
 
 	destacar_habilidade(0)
@@ -100,12 +98,6 @@ func _pedir_slot(idx: int):
 		bm.select_slot(idx)
 	else:
 		destacar_habilidade(idx)
-
-
-func _on_ataque():
-	var player = get_tree().get_first_node_in_group("player")
-	if player != null and player.has_method("try_stamp_attack"):
-		player.try_stamp_attack()
 
 
 func _on_invocacao():

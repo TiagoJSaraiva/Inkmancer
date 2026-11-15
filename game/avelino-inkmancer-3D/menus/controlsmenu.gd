@@ -7,7 +7,6 @@ const ACTIONS = {
 	"walk_back":  "Mover Baixo",
 	"walk_left":  "Mover Esquerda",
 	"walk_right": "Mover Direita",
-	"attack":     "Carimbada",
 	"summon":     "Invocar (2 cliques)",
 	"slot_0":     "Carimbo 1",
 	"slot_1":     "Carimbo 2",

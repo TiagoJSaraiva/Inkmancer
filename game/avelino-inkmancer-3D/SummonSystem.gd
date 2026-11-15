@@ -245,8 +245,8 @@ func _invocar():
 	get_tree().current_scene.add_child(unit_instance)
 	unit_instance.global_position = posicao_invocacao
 	player.spend_mana(mana_cost)
-	if player.has_method("play_stamp_animation"):
-		player.play_stamp_animation()
+	if player.has_method("play_summon_sound"):
+		player.play_summon_sound()
 
 	var cooldown_duration: float = _get_cooldown_by_rarity(carimbo_rarity)
 	button_manager.start_slot_cooldown(selected_slot, cooldown_duration)
