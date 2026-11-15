@@ -22,9 +22,9 @@ const MAX_POR_ATRIBUTO: int = 5
 const DISPLAY_SCENE = preload("res://menus/displaycarimbo.tscn")
 
 const PONTOS_POR_RARIDADE = {
-	"comum":   3,
-	"incomum": 6,
-	"raro":    9,
+	Raridade.COMUM:   3,
+	Raridade.INCOMUM: 6,
+	Raridade.RARO:    9,
 }
 
 # Mínimo de pontos livres por atributo que o carimbo pode ter
@@ -69,18 +69,7 @@ func _ready():
 	add_to_group("carimbo")
 	if not ArrowManager.carimbos.has(self):
 		ArrowManager.carimbos.append(self)
-	var _raridade = randi_range(1, 3)
-	match _raridade:
-		1: 
-			self.raridade = Raridade.COMUM
-			pontos_totais = PONTOS_POR_RARIDADE.comum
-		2: 
-			self.raridade = Raridade.INCOMUM
-			pontos_totais = PONTOS_POR_RARIDADE.incomum
-		3: 
-			self.raridade = Raridade.RARO
-			pontos_totais = PONTOS_POR_RARIDADE.raro
-	
+
 func _exit_tree() -> void:
 	ArrowManager.carimbos.erase(self)
 
@@ -92,11 +81,25 @@ func _on_body_entered(body: Node3D) -> void:
 		_ao_coletar(body)
 
 func _ao_coletar(_player: Node3D) -> void:
+	if _player.has_method("carimbos_cheio") and _player.carimbos_cheio():
+		# Jogador já tem o máximo de carimbos: o carimbo fica no mundo.
+		var hud = get_tree().current_scene.get_node_or_null("HUD")
+		if hud != null and hud.has_method("mostrar_aviso"):
+			hud.mostrar_aviso("Limite de carimbos atingido")
+		return
 	_coletado = true
+	# A raridade segue a ordem de coleta (1º/2º comum, 3º incomum, 4º raro)
+	if _player.has_method("proxima_raridade"):
+		definir_raridade(_player.proxima_raridade())
 	var display = DISPLAY_SCENE.instantiate()
 	UiUtil.show_menu(get_tree(), display)
 	display.carregar_carimbo(self)
 	
+
+
+func definir_raridade(r: Raridade) -> void:
+	raridade      = r
+	pontos_totais = PONTOS_POR_RARIDADE[r]
 
 
 func inicializar(r: Raridade):

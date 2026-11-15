@@ -198,8 +198,25 @@ func spend_mana(_mana: float):
 	hud.atualizar_mana(current_mana, max_mana)
 
 
+const MAX_CARIMBOS: int = 4
+
+func carimbos_cheio() -> bool:
+	return list_of_carimbos.size() >= MAX_CARIMBOS
+
+
+## Raridade do próximo carimbo, pela ordem de coleta: comum, comum, incomum, raro.
+func proxima_raridade() -> Carimbo.Raridade:
+	match list_of_carimbos.size():
+		0, 1:
+			return Carimbo.Raridade.COMUM
+		2:
+			return Carimbo.Raridade.INCOMUM
+		_:
+			return Carimbo.Raridade.RARO
+
+
 func add_carimbo(unit_type: Carimbo.TipoUnidade, unit_attack, unit_hp, unit_ms, carimbo_rarity: Carimbo.Raridade):
-	if index_counter >= 4:
+	if carimbos_cheio():
 		return
 	list_of_carimbos.push_back(
 		{
