@@ -4,6 +4,10 @@ class_name SiegeUnit
 @export var projectile_scene: PackedScene
 @export var projectile_arc_time: float = 0.6
 @export var projectile_offset_distance: float = 1.0
+## Altura (m) acima dos pés do alvo que o projétil mira (centro do corpo, não o chão)
+@export var aim_height_offset: float = 1.5
+## Fração do deslocamento do alvo durante o voo que é antecipada (0 = sem antecipação)
+@export var aim_lead_factor: float = 1.0
 @export var projectile_splash_radius: float = 3.0
 
 @onready var attack_origin: Node3D = $AttackOrigin
@@ -29,10 +33,13 @@ func attack(enemy: BaseUnit):
 	var start_pos = attack_origin.global_position
 
 	# DIREÇÃO atacante → alvo
-	var dir = (enemy.global_position - global_position).normalized()
+	var aim_pos := _get_aim_position(enemy)
+	var dir = (aim_pos - global_position)
+	dir.y = 0.0
+	dir = dir.normalized()
 
 	# PONTO FINAL = X metros atrás do alvo
-	var target_point = enemy.global_position + dir * projectile_offset_distance
+	var target_point = aim_pos + dir * projectile_offset_distance
 
 	projectile.arc_time = projectile_arc_time
 	projectile.splash_radius = projectile_splash_radius
@@ -82,3 +89,10 @@ func get_closest_target() -> BaseUnit:
 			closest = unit
 
 	return closest
+
+
+## Ponto de mira: centro do corpo do alvo, antecipando o movimento durante o voo
+func _get_aim_position(enemy: BaseUnit) -> Vector3:
+	var pos := enemy.global_position + Vector3.UP * aim_height_offset
+	var vel := Vector3(enemy.velocity.x, 0.0, enemy.velocity.z)
+	return pos + vel * projectile_arc_time * aim_lead_factor

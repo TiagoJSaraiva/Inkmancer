@@ -82,7 +82,11 @@ func _on_body_entered(body):
 	has_collided = true
 
 	if splash_radius > 0.0:
-		_explode(global_position)
+		# Alvo atingido em cheio leva o dano total; o resto entra na área
+		var direct: BaseUnit = body if body is BaseUnit else null
+		if direct != null:
+			direct.take_damage(damage)
+		_explode(global_position, direct)
 		queue_free()
 		return
 
@@ -94,9 +98,9 @@ func _on_body_entered(body):
 	on_hit_environment(body)
 
 
-func _explode(center: Vector3) -> void:
+func _explode(center: Vector3, skip: BaseUnit = null) -> void:
 	for unit in get_tree().get_nodes_in_group("base_unit"):
-		if not BaseUnit.is_unit_alive(unit) or unit.faction == shooter_faction:
+		if unit == skip or not BaseUnit.is_unit_alive(unit) or unit.faction == shooter_faction:
 			continue
 		var offset: Vector3 = unit.global_position - center
 		offset.y = 0.0
