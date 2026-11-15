@@ -6,6 +6,8 @@ class_name UnitSpawner
 
 const MIN_DIST_SQ: float = 128.0 * 128.0
 const MAX_DIST_SQ: float = 256.0 * 256.0
+## Distância (m) do spawner em que cada unidade de um lote nasce
+const SPAWN_SPREAD: float = 3.0
 
 var _last_spawn_time: float = 0.0
 
@@ -26,17 +28,24 @@ func try_spawn(player: Node3D, current_time: float, stat_multiplier: float = 1.0
 	if dist_sq < MIN_DIST_SQ or dist_sq > MAX_DIST_SQ:
 		return false
 
+	# Unidades do mesmo lote nascem espalhadas: corpos sobrepostos no mesmo
+	# ponto são empurrados juntos pela física e saem disparados em linha reta.
+	var base_angle := randf() * TAU
 	for i in range(count):
-		_spawn_unit(stat_multiplier)
+		var offset := Vector3.ZERO
+		if count > 1:
+			var angle := base_angle + TAU * float(i) / float(count)
+			offset = Vector3(cos(angle), 0.0, sin(angle)) * SPAWN_SPREAD
+		_spawn_unit(stat_multiplier, offset)
 	_last_spawn_time = current_time
 	return true
 
 
-func _spawn_unit(stat_multiplier: float) -> void:
+func _spawn_unit(stat_multiplier: float, offset: Vector3 = Vector3.ZERO) -> void:
 	var scene: PackedScene = unit_pool.pick_random()
 	var unit: Node3D = scene.instantiate()
 	if unit is BaseUnit:
 		unit.apply_stat_multiplier(stat_multiplier)
 
 	get_tree().current_scene.add_child(unit)
-	unit.global_position = global_position
+	unit.global_position = global_position + offset
