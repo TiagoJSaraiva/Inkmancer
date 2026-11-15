@@ -35,11 +35,22 @@ func is_attack_committed() -> bool:
 	return _attack_committed
 
 
+## Velocidade extra da animação de ataque, para o golpe caber no intervalo
+## entre ataques (senão animações longas reduziriam o DPS).
+func _attack_anim_speed() -> float:
+	var player := _get_anim_player()
+	if player == null or attack_animation == &"" or not player.has_animation(attack_animation):
+		return 1.0
+	var anim_len: float = player.get_animation(attack_animation).length / max(absf(player.speed_scale), 0.01)
+	var interval: float = 1.0 / max(attack_speed, 0.01)
+	return max(anim_len / interval, 1.0)
+
+
 func _attack_duration() -> float:
 	var player := _get_anim_player()
 	if player == null or attack_animation == &"" or not player.has_animation(attack_animation):
 		return 0.0
-	var anim_speed: float = max(absf(player.speed_scale), 0.01)
+	var anim_speed: float = max(absf(player.speed_scale), 0.01) * _attack_anim_speed()
 	return player.get_animation(attack_animation).length / anim_speed
 
 
@@ -53,7 +64,7 @@ func _start_attack() -> void:
 	var player := _get_anim_player()
 	if player != null and _attack_time_left > 0.0:
 		player.stop()
-		player.play(attack_animation)
+		player.play(attack_animation, -1, _attack_anim_speed())
 
 
 ## Golpe iniciado sempre termina: o dano é aplicado ao fim da animação, mesmo
